@@ -50,27 +50,42 @@ int BookManager::InsertBook(const BookData& book_data)
 
     query.bindValue(":title", book_data.title);
 
-    int org_lang_id = id_name_table_manager->GetIdByName(IdNameTable::Language, book_data.original_language);
-    if(org_lang_id == -1) {
-        org_lang_id = id_name_table_manager->Insert(IdNameTable::Language, book_data.original_language);
+    // Handle original language (nullable)
+    if (!book_data.original_language.trimmed().isEmpty()) {
+        int org_lang_id = id_name_table_manager->GetIdByName(IdNameTable::Language, book_data.original_language);
         if(org_lang_id == -1) {
-            qCritical() << "Failed to insert original language:" << book_data.original_language;
-            return -1; // Insertion failed
+            org_lang_id = id_name_table_manager->Insert(IdNameTable::Language, book_data.original_language);
+            if(org_lang_id == -1) {
+                qCritical() << "Failed to insert original language:" << book_data.original_language;
+                return -1; // Insertion failed
+            }
         }
+        query.bindValue(":org_lang_id", org_lang_id);
+    } else {
+        query.bindValue(":org_lang_id", QVariant(QVariant::Int)); // NULL
     }
-    query.bindValue(":org_lang_id", org_lang_id);
 
-    int country_id = id_name_table_manager->GetIdByName(IdNameTable::Country, book_data.country);
-    if(country_id == -1) {
-        country_id = id_name_table_manager->Insert(IdNameTable::Country, book_data.country);
+    // Handle country (nullable)
+    if (!book_data.country.trimmed().isEmpty()) {
+        int country_id = id_name_table_manager->GetIdByName(IdNameTable::Country, book_data.country);
         if(country_id == -1) {
-            qCritical() << "Failed to insert country:" << book_data.country;
-            return -1; // Insertion failed
+            country_id = id_name_table_manager->Insert(IdNameTable::Country, book_data.country);
+            if(country_id == -1) {
+                qCritical() << "Failed to insert country:" << book_data.country;
+                return -1; // Insertion failed
+            }
         }
+        query.bindValue(":country_id", country_id);
+    } else {
+        query.bindValue(":country_id", QVariant(QVariant::Int)); // NULL
     }
-    query.bindValue(":country_id", country_id);
 
-    query.bindValue(":type", book_data.type);
+    // Handle type (nullable)
+    if (!book_data.type.trimmed().isEmpty()) {
+        query.bindValue(":type", book_data.type);
+    } else {
+        query.bindValue(":type", QVariant(QVariant::String)); // NULL
+    }
 
     if (!query.exec()) {
         qCritical() << "InsertBook:" << query.lastError().text();
@@ -97,8 +112,10 @@ int BookManager::InsertBook(const BookData& book_data)
         }
     }
 
-    // Insert genres
+    // Insert genres (optional)
     for (const QString& genre : book_data.genres) {
+        if (genre.trimmed().isEmpty())
+            continue;
         int genre_id = id_name_table_manager->GetIdByName(IdNameTable::Genre, genre);
         if (genre_id == -1) {
             genre_id = id_name_table_manager->Insert(IdNameTable::Genre, genre);

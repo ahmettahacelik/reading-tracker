@@ -41,6 +41,13 @@ public:
      */
     int InsertEdition(const EditionData& edition_data);
 
+    /**
+     * @brief Retrieves all editions from the database.
+     * 
+     * @return QMap<int, QString> A map of edition IDs to their labels.
+     */
+    QMap<int, QString> GetAllEditions() const;
+
 private:
     DatabaseManager* database_manager; ///< Pointer to the DatabaseManager instance.
     IdNameTableManager* id_name_table_manager; ///< Pointer to the IdNameTableManager instance.

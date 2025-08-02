@@ -4,7 +4,6 @@
 #include "idnametablemanager.h"
 
 struct BookData {
-    int id; ///< Unique identifier for the book
     QString title; ///< Title of the book
     QStringList authors; ///< List of authors of the book
     QStringList genres; ///< List of genres of the book

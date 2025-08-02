@@ -48,27 +48,46 @@ int EditionManager::InsertEdition(const EditionData& edition_data)
     }
     query.bindValue(":publisher_id", publisher_id);
 
-    int language_id = id_name_table_manager->GetIdByName(IdNameTable::Language, edition_data.language);
-    if (language_id == -1) {
-        language_id = id_name_table_manager->Insert(IdNameTable::Language, edition_data.language);
+    // Handle language_id
+    int language_id = -1;
+    if (!edition_data.language.trimmed().isEmpty()) {
+        language_id = id_name_table_manager->GetIdByName(IdNameTable::Language, edition_data.language);
         if (language_id == -1) {
-            qCritical() << "Failed to insert language:" << edition_data.language;
-            return -1; // Insertion failed
+            language_id = id_name_table_manager->Insert(IdNameTable::Language, edition_data.language);
+            if (language_id == -1) {
+                qCritical() << "Failed to insert language:" << edition_data.language;
+                return -1; // Insertion failed
+            }
         }
+        query.bindValue(":language_id", language_id);
     }
-    query.bindValue(":language_id", language_id);
+    else {
+        query.bindValue(":language_id", QVariant(QVariant::Int)); // Will be NULL in SQL
+    }
 
-    int series_id = id_name_table_manager->GetIdByName(IdNameTable::Series, edition_data.series);
-    if (series_id == -1) {
-        series_id = id_name_table_manager->Insert(IdNameTable::Series, edition_data.series);
+    // Handle series_id
+    int series_id = -1;
+    if (!edition_data.series.trimmed().isEmpty()) {
+        series_id = id_name_table_manager->GetIdByName(IdNameTable::Series, edition_data.series);
         if (series_id == -1) {
-            qCritical() << "Failed to insert series:" << edition_data.series;
-            return -1; // Insertion failed
+            series_id = id_name_table_manager->Insert(IdNameTable::Series, edition_data.series);
+            if (series_id == -1) {
+                qCritical() << "Failed to insert series:" << edition_data.series;
+                return -1; // Insertion failed
+            }
         }
+        query.bindValue(":series_id", series_id);
     }
-    query.bindValue(":series_id", series_id);
+    else {
+        query.bindValue(":series_id", QVariant(QVariant::Int)); // Will be NULL in SQL
+    }
 
-    query.bindValue(":page_count", edition_data.page_count);
+    if(edition_data.page_count <= 0) {
+        query.bindValue(":page_count", QVariant(QVariant::Int)); // Will be NULL in SQL
+    }
+    else {
+        query.bindValue(":page_count", edition_data.page_count);
+    }
     query.bindValue(":publication_date", edition_data.publication_date);
     query.bindValue(":isbn", edition_data.isbn);
     query.bindValue(":type", edition_data.type);
