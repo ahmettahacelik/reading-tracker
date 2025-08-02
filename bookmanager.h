@@ -4,7 +4,6 @@
 #include "idnametablemanager.h"
 
 struct BookData {
-    int id; ///< Unique identifier for the book
     QString title; ///< Title of the book
     QStringList authors; ///< List of authors of the book
     QStringList genres; ///< List of genres of the book
@@ -47,9 +46,17 @@ public:
     /**
      * @brief Get the All Books in the database.
      * 
-     * @return QStringList The titles of all books in the database ordered by title.
+     * @return QMap<int, QString> A map of book IDs to their titles, with authors included in the title.
      */
-    QStringList GetAllBooks() const;
+    QMap<int, QString> GetAllBooks() const;
+
+    /**
+     * @brief Get the Authors For Book
+     * 
+     * @param book_id The ID of the book to retrieve authors for.
+     * @return QStringList List of authors for the specified book.
+     */
+    QStringList GetAuthorsForBook(int book_id) const;
 
 private:
     DatabaseManager* database_manager; ///< Pointer to the DatabaseManager instance.

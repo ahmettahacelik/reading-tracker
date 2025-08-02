@@ -17,6 +17,11 @@ IdNameTableManager::IdNameTableManager(DatabaseManager* db_manager)
     CreateTable(IdNameTable::Series);
 }
 
+IdNameTableManager::~IdNameTableManager()
+{
+    // Destructor logic if needed
+}
+
 int IdNameTableManager::Insert(IdNameTable table, const QString& name)
 {
     if (name.isEmpty()) {
