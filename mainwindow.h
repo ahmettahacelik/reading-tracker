@@ -33,5 +33,7 @@ private:
     void RefreshBookCompleters(); ///< Refreshes the completers for input fields.
 
     void RefreshEditionCompleters(); ///< Refreshes the completers for edition-related input fields.
+
+    void RefreshEditionsView(); ///< Refreshes the editions view in the UI.
 };
 #endif // MAINWINDOW_H

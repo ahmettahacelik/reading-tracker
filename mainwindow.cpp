@@ -3,6 +3,7 @@
 
 #include <QMessageBox>
 #include <QCompleter>
+#include <QStandardItemModel>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -20,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     RefreshBookCompleters();
 
     RefreshEditionCompleters();
+    RefreshEditionsView();
 }
 
 MainWindow::~MainWindow()
@@ -159,6 +161,8 @@ void MainWindow::on_pushButtonAddEdition_clicked()
 
     RefreshEditionCompleters(); // Refresh completers to include new entries
     ui->comboBoxBook->setFocus(); // Set focus back to book combo box
+
+    RefreshEditionsView(); // Refresh the editions view to show the new edition
 }
 
 void MainWindow::RefreshEditionCompleters()
@@ -206,3 +210,44 @@ void MainWindow::RefreshEditionCompleters()
     ui->lineEditSeries->setCompleter(seriesCompleter);
 }
 
+void MainWindow::RefreshEditionsView()
+{
+    if (!edition_manager) {
+        qCritical() << "EditionManager is not initialized.";
+        return;
+    }
+    
+    QMap<int, QString> editions = edition_manager->GetAllEditions();
+    QStandardItemModel* model = new QStandardItemModel(this);
+    model->setColumnCount(4);
+    model->setHeaderData(0, Qt::Horizontal, "Edition ID");
+    model->setHeaderData(1, Qt::Horizontal, "Title");
+    model->setHeaderData(2, Qt::Horizontal, "Publisher");
+    model->setHeaderData(3, Qt::Horizontal, "Authors");
+
+    int row = 0;
+    for (auto it = editions.constBegin(); it != editions.constEnd(); ++it) {
+        // Assuming label format: "Title - Publisher - Author1, Author2, ..."
+        QStringList parts = it.value().split(" - ");
+        QString title = parts.value(0);
+        QString publisher = parts.value(1);
+        QString authors = parts.value(2);
+
+        QStandardItem* itemEditionId = new QStandardItem(QString::number(it.key()));
+        QStandardItem* itemTitle = new QStandardItem(title);
+        QStandardItem* itemPublisher = new QStandardItem(publisher);
+        QStandardItem* itemAuthors = new QStandardItem(authors);
+
+        model->setItem(row, 0, itemEditionId);
+        model->setItem(row, 1, itemTitle);
+        model->setItem(row, 2, itemPublisher);
+        model->setItem(row, 3, itemAuthors);
+        row++;
+    }
+
+    ui->tableViewEditions->setModel(model);
+    ui->tableViewEditions->resizeColumnsToContents();
+
+    // Hide the Edition ID column
+    ui->tableViewEditions->setColumnHidden(0, true);
+}
