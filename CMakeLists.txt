@@ -12,6 +12,7 @@ qt_add_executable(reading-tracker
     mainwindow.h
     mainwindow.ui
     databasemanager.h databasemanager.cpp
+    idnametablemanager.h idnametablemanager.cpp
 )
 
 target_link_libraries(reading-tracker
