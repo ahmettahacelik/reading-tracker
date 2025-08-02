@@ -118,28 +118,68 @@ int BookManager::InsertBook(const BookData& book_data)
     return book_id; // Return the ID of the inserted book
 }
 
-QStringList BookManager::GetAllBooks() const
+QMap<int, QString> BookManager::GetAllBooks() const
 {
+    QMap<int, QString> books;
+
     // Ensure the database connection is valid
     if (!database_manager || !database_manager->GetDatabase().isOpen()) {
         qCritical() << "Database connection is not valid or open.";
-        return {}; // Database error
+        return books; // Database error
     }
 
     QSqlDatabase db = database_manager->GetDatabase();
     QSqlQuery query(db);
-    QStringList book_titles;
 
-    if (!query.exec("SELECT title FROM Book ORDER BY title")) {
+    // Get all books with their IDs and titles
+    if (!query.exec("SELECT id, title FROM Book ORDER BY title")) {
         qCritical() << "GetAllBooks:" << query.lastError().text();
-        return book_titles; // Return empty list on error
+        return books;
     }
 
     while (query.next()) {
-        book_titles.append(query.value(0).toString());
+        int book_id = query.value(0).toInt();
+        QString title = query.value(1).toString();
+        QStringList authors = GetAuthorsForBook(book_id);
+        QString display = title;
+        if (!authors.isEmpty()) {
+            display += " - " + authors.join(", ");
+        }
+        books.insert(book_id, display);
     }
 
-    return book_titles; // Return the list of book titles
+    return books;
+}
+
+// Helper function to get authors for a specific book
+QStringList BookManager::GetAuthorsForBook(int book_id) const
+{
+    QStringList authors;
+
+    if (!database_manager || !database_manager->GetDatabase().isOpen()) {
+        qCritical() << "Database connection is not valid or open.";
+        return authors;
+    }
+
+    QSqlDatabase db = database_manager->GetDatabase();
+    QSqlQuery query(db);
+
+    query.prepare("SELECT Author.name FROM Author "
+                  "INNER JOIN Book2Author ON Author.id = Book2Author.author_id "
+                  "WHERE Book2Author.book_id = :book_id "
+                  "ORDER BY Author.name");
+    query.bindValue(":book_id", book_id);
+
+    if (!query.exec()) {
+        qCritical() << "GetAuthorsForBook:" << query.lastError().text();
+        return authors;
+    }
+
+    while (query.next()) {
+        authors.append(query.value(0).toString());
+    }
+
+    return authors;
 }
 
 void BookManager::CreateBookTable()
