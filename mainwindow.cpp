@@ -12,10 +12,18 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     // Initialize EditionManager and BookManager
-    database_manager = new DatabaseManager();
-    id_name_table_manager = new IdNameTableManager(database_manager);
-    book_manager = new BookManager(database_manager, id_name_table_manager);
-    edition_manager = new EditionManager(database_manager, id_name_table_manager, book_manager);
+    DatabaseManager* database_manager = new DatabaseManager();
+
+    author_manager = new IdNameTableManager(database_manager, IdNameTable::Author);
+    language_manager = new IdNameTableManager(database_manager, IdNameTable::Language);
+    country_manager = new IdNameTableManager(database_manager, IdNameTable::Country);
+    genre_manager = new IdNameTableManager(database_manager, IdNameTable::Genre);
+    book_manager = new BookManager(database_manager, author_manager, language_manager, country_manager, genre_manager);
+
+    publisher_manager = new IdNameTableManager(database_manager, IdNameTable::Publisher);
+    //language_manager = new IdNameTableManager(database_manager, IdNameTable::Language); // Already created for BookManager
+    series_manager = new IdNameTableManager(database_manager, IdNameTable::Series);
+    edition_manager = new EditionManager(database_manager, publisher_manager, language_manager, series_manager, book_manager);
 
     // Set up completers for input fields
     RefreshBookCompleters();
@@ -27,9 +35,13 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete edition_manager;
+    delete series_manager;
+    delete publisher_manager;
     delete book_manager;
-    delete id_name_table_manager;
-    delete database_manager;
+    delete genre_manager;
+    delete country_manager;
+    delete language_manager;
+    delete author_manager;
     delete ui;
 }
 
@@ -83,40 +95,11 @@ void MainWindow::on_pushButtonAddBook_clicked()
 
 void MainWindow::RefreshBookCompleters()
 {
-    /// @todo Consider creating a function to RefreshCompleter which takes a table type and input field
-    
     // Refresh completers for input fields
-    QStringList authors = id_name_table_manager->GetAllNames(IdNameTable::Author);
-    QCompleter* authorCompleter = new QCompleter(authors, this);
-    authorCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    authorCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    authorCompleter->setFilterMode(Qt::MatchContains);
-    authorCompleter->setCompletionRole(Qt::DisplayRole);
-    ui->lineEditAuthors->setCompleter(authorCompleter);
-
-    QStringList languages = id_name_table_manager->GetAllNames(IdNameTable::Language);
-    QCompleter* languageCompleter = new QCompleter(languages, this);
-    languageCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    languageCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    languageCompleter->setFilterMode(Qt::MatchContains);
-    languageCompleter->setCompletionRole(Qt::DisplayRole);
-    ui->lineEditOriginalLanguage->setCompleter(languageCompleter);
-
-    QStringList countries = id_name_table_manager->GetAllNames(IdNameTable::Country);
-    QCompleter* countryCompleter = new QCompleter(countries, this);
-    countryCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    countryCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    countryCompleter->setFilterMode(Qt::MatchContains);
-    countryCompleter->setCompletionRole(Qt::DisplayRole);
-    ui->lineEditCountry->setCompleter(countryCompleter);
-
-    QStringList genres = id_name_table_manager->GetAllNames(IdNameTable::Genre);
-    QCompleter* genreCompleter = new QCompleter(genres, this);
-    genreCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    genreCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    genreCompleter->setFilterMode(Qt::MatchContains);
-    genreCompleter->setCompletionRole(Qt::DisplayRole);
-    ui->lineEditGenres->setCompleter(genreCompleter);
+    RefreshQCompleter(author_manager, ui->lineEditAuthors);
+    RefreshQCompleter(language_manager, ui->lineEditOriginalLanguage);
+    RefreshQCompleter(country_manager, ui->lineEditCountry);
+    RefreshQCompleter(genre_manager, ui->lineEditGenres);
 }
 
 void MainWindow::on_pushButtonAddEdition_clicked()
@@ -172,13 +155,9 @@ void MainWindow::RefreshEditionCompleters()
         qCritical() << "BookManager is not initialized.";
         return;
     }
-    if (!id_name_table_manager) {
-        qCritical() << "IdNameTableManager is not initialized.";
+    if (!publisher_manager || !language_manager || !series_manager) {
+        qCritical() << "IdNameTableManager instances are not initialized.";
         return;
-    }
-    if (!database_manager || !database_manager->GetDatabase().isOpen()) {
-        qCritical() << "Database connection is not valid or open.";
-        return; // Database error
     }
     
     QMap<int, QString> books = book_manager->GetAllBooks();
@@ -188,26 +167,25 @@ void MainWindow::RefreshEditionCompleters()
     }
 
     // Refresh completers for edition-related input fields
-    QStringList publishers = id_name_table_manager->GetAllNames(IdNameTable::Publisher);
-    QCompleter* publisherCompleter = new QCompleter(publishers, this);
-    publisherCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    publisherCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    publisherCompleter->setFilterMode(Qt::MatchContains);
-    ui->lineEditPublisher->setCompleter(publisherCompleter);
+    RefreshQCompleter(publisher_manager, ui->lineEditPublisher);
+    RefreshQCompleter(language_manager, ui->lineEditLanguage);
+    RefreshQCompleter(series_manager, ui->lineEditSeries);
+}
 
-    QStringList languages = id_name_table_manager->GetAllNames(IdNameTable::Language);
-    QCompleter* languageCompleter = new QCompleter(languages, this);
-    languageCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    languageCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    languageCompleter->setFilterMode(Qt::MatchContains);
-    ui->lineEditLanguage->setCompleter(languageCompleter);
+void MainWindow::RefreshQCompleter(IdNameTableManager* manager, QLineEdit* lineEdit)
+{
+    if (!manager) {
+        qCritical() << "IdNameTableManager is not initialized.";
+        return;
+    }
 
-    QStringList series = id_name_table_manager->GetAllNames(IdNameTable::Series);
-    QCompleter* seriesCompleter = new QCompleter(series, this);
-    seriesCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    seriesCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    seriesCompleter->setFilterMode(Qt::MatchContains);
-    ui->lineEditSeries->setCompleter(seriesCompleter);
+    QStringList names = manager->GetAllNames();
+    QCompleter* completer = new QCompleter(names, this);
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    completer->setCompletionMode(QCompleter::PopupCompletion);
+    completer->setFilterMode(Qt::MatchContains);
+    completer->setCompletionRole(Qt::DisplayRole);
+    lineEdit->setCompleter(completer);
 }
 
 void MainWindow::RefreshEditionsView()

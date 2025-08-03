@@ -4,7 +4,6 @@
 #include "bookmanager.h"
 
 struct EditionData {
-    int id; ///< Unique identifier for the edition
     int book_id; ///< ID of the book this edition belongs to
     QString publisher; ///< Publisher of the edition
     QString language; ///< Language of the edition
@@ -23,10 +22,16 @@ public:
      * @brief Constructs an EditionManager object.
      * 
      * @param db_manager Pointer to the DatabaseManager instance.
-     * @param id_name_table_manager Pointer to the IdNameTableManager instance.
+     * @param publisher_manager Pointer to the IdNameTableManager instance for publishers.
+     * @param language_manager Pointer to the IdNameTableManager instance for languages.
+     * @param series_manager Pointer to the IdNameTableManager instance for series.
      * @param book_manager Pointer to the BookManager instance.
      */
-    EditionManager(DatabaseManager* db_manager, IdNameTableManager* id_name_table_manager, BookManager* book_manager);
+    EditionManager(DatabaseManager* db_manager,
+                   IdNameTableManager* publisher_manager,
+                   IdNameTableManager* language_manager,
+                   IdNameTableManager* series_manager,
+                   BookManager* book_manager);
 
     /**
      * @brief Destroys the EditionManager object.
@@ -50,7 +55,9 @@ public:
 
 private:
     DatabaseManager* database_manager; ///< Pointer to the DatabaseManager instance.
-    IdNameTableManager* id_name_table_manager; ///< Pointer to the IdNameTableManager instance.
+    IdNameTableManager* publisher_manager; ///< Pointer to the IdNameTableManager instance for publishers.
+    IdNameTableManager* language_manager; ///< Pointer to the IdNameTableManager instance for languages.
+    IdNameTableManager* series_manager; ///< Pointer to the IdNameTableManager instance for series.
     BookManager* book_manager; ///< Pointer to the BookManager instance.
 
     void CreateEditionTable(); ///< Creates the edition table in the database.

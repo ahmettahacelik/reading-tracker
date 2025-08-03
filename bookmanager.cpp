@@ -1,7 +1,15 @@
 #include "bookmanager.h"
 
-BookManager::BookManager(DatabaseManager* db_manager, IdNameTableManager* id_name_table_manager)
-: database_manager(db_manager), id_name_table_manager(id_name_table_manager)
+BookManager::BookManager(DatabaseManager* db_manager,
+                         IdNameTableManager* author_manager,
+                         IdNameTableManager* language_manager,
+                         IdNameTableManager* country_manager,
+                         IdNameTableManager* genre_manager)
+    : database_manager(db_manager),
+      author_manager(author_manager),
+      language_manager(language_manager),
+      country_manager(country_manager),
+      genre_manager(genre_manager)
 {
     if (!database_manager || !database_manager->GetDatabase().isOpen()) {
         qCritical() << "Database connection is not valid or open.";
@@ -27,10 +35,9 @@ int BookManager::InsertBook(const BookData& book_data)
         return -1; // Database error
     }
 
-    // Ensure id_name_table_manager is valid
-    if (!id_name_table_manager) {
-        qCritical() << "IdNameTableManager is not initialized.";
-        return -1; // Invalid state
+    if(!author_manager || !language_manager || !country_manager || !genre_manager) {
+        qCritical() << "IdNameTableManager instances are not initialized.";
+        return -1; // Initialization error
     }
 
     if(book_data.title.isEmpty()) {
@@ -52,9 +59,9 @@ int BookManager::InsertBook(const BookData& book_data)
 
     // Handle original language (nullable)
     if (!book_data.original_language.trimmed().isEmpty()) {
-        int org_lang_id = id_name_table_manager->GetIdByName(IdNameTable::Language, book_data.original_language);
+        int org_lang_id = language_manager->GetIdByName(book_data.original_language);
         if(org_lang_id == -1) {
-            org_lang_id = id_name_table_manager->Insert(IdNameTable::Language, book_data.original_language);
+            org_lang_id = language_manager->Insert(book_data.original_language);
             if(org_lang_id == -1) {
                 qCritical() << "Failed to insert original language:" << book_data.original_language;
                 return -1; // Insertion failed
@@ -67,9 +74,9 @@ int BookManager::InsertBook(const BookData& book_data)
 
     // Handle country (nullable)
     if (!book_data.country.trimmed().isEmpty()) {
-        int country_id = id_name_table_manager->GetIdByName(IdNameTable::Country, book_data.country);
+        int country_id = country_manager->GetIdByName(book_data.country);
         if(country_id == -1) {
-            country_id = id_name_table_manager->Insert(IdNameTable::Country, book_data.country);
+            country_id = country_manager->Insert(book_data.country);
             if(country_id == -1) {
                 qCritical() << "Failed to insert country:" << book_data.country;
                 return -1; // Insertion failed
@@ -96,9 +103,9 @@ int BookManager::InsertBook(const BookData& book_data)
 
     // Insert authors
     for (const QString& author : book_data.authors) {
-        int author_id = id_name_table_manager->GetIdByName(IdNameTable::Author, author);
+        int author_id = author_manager->GetIdByName(author);
         if (author_id == -1) {
-            author_id = id_name_table_manager->Insert(IdNameTable::Author, author);
+            author_id = author_manager->Insert(author);
             if (author_id == -1) {
                 qCritical() << "Failed to insert author:" << author;
                 return -1; // Insertion failed
@@ -109,6 +116,7 @@ int BookManager::InsertBook(const BookData& book_data)
         query.bindValue(":author_id", author_id);
         if (!query.exec()) {
             qCritical() << "InsertBook2Author:" << query.lastError().text();
+            /// @todo Handle insertion failure for authors
         }
     }
 
@@ -116,9 +124,9 @@ int BookManager::InsertBook(const BookData& book_data)
     for (const QString& genre : book_data.genres) {
         if (genre.trimmed().isEmpty())
             continue;
-        int genre_id = id_name_table_manager->GetIdByName(IdNameTable::Genre, genre);
+        int genre_id = genre_manager->GetIdByName(genre);
         if (genre_id == -1) {
-            genre_id = id_name_table_manager->Insert(IdNameTable::Genre, genre);
+            genre_id = genre_manager->Insert(genre);
             if (genre_id == -1) {
                 qCritical() << "Failed to insert genre:" << genre;
                 return -1; // Insertion failed
@@ -129,6 +137,7 @@ int BookManager::InsertBook(const BookData& book_data)
         query.bindValue(":genre_id", genre_id);
         if (!query.exec()) {
             qCritical() << "InsertBook2Genre:" << query.lastError().text();
+            /// @todo Handle insertion failure for genres
         }
     }
 

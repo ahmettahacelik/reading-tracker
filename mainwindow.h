@@ -4,6 +4,7 @@
 #include "editionmanager.h"
 
 #include <QMainWindow>
+#include <QLineEdit>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -25,14 +26,20 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    EditionManager* edition_manager; ///< Pointer to the EditionManager instance.
+    IdNameTableManager* author_manager; ///< Pointer to the IdNameTableManager instance for authors.
+    IdNameTableManager* language_manager; ///< Pointer to the IdNameTableManager instance for languages.
+    IdNameTableManager* country_manager; ///< Pointer to the IdNameTableManager instance for countries.
+    IdNameTableManager* genre_manager; ///< Pointer to the IdNameTableManager instance for genres.
     BookManager* book_manager; ///< Pointer to the BookManager instance.
-    IdNameTableManager* id_name_table_manager; ///< Pointer to the IdNameTableManager instance.
-    DatabaseManager* database_manager; ///< Pointer to the DatabaseManager instance.
+    IdNameTableManager* publisher_manager; ///< Pointer to the IdNameTableManager instance for publishers.
+    IdNameTableManager* series_manager; ///< Pointer to the IdNameTableManager instance for series.
+    EditionManager* edition_manager; ///< Pointer to the EditionManager instance.
 
     void RefreshBookCompleters(); ///< Refreshes the completers for input fields.
 
     void RefreshEditionCompleters(); ///< Refreshes the completers for edition-related input fields.
+
+    void RefreshQCompleter(IdNameTableManager* manager, QLineEdit* lineEdit); ///< Refreshes a specific completer for a given IdNameTableManager and QLineEdit.
 
     void RefreshEditionsView(); ///< Refreshes the editions view in the UI.
 };

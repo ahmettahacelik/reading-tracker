@@ -1,7 +1,15 @@
 #include "editionmanager.h"
 
-EditionManager::EditionManager(DatabaseManager* db_manager, IdNameTableManager* id_name_table_manager, BookManager* book_manager)
-: database_manager(db_manager), id_name_table_manager(id_name_table_manager), book_manager(book_manager)
+EditionManager::EditionManager(DatabaseManager* db_manager,
+                               IdNameTableManager* publisher_manager,
+                               IdNameTableManager* language_manager,
+                               IdNameTableManager* series_manager,
+                               BookManager* book_manager)
+    : database_manager(db_manager),
+      publisher_manager(publisher_manager),
+      language_manager(language_manager),
+      series_manager(series_manager),
+      book_manager(book_manager)
 {
     if (!database_manager || !database_manager->GetDatabase().isOpen()) {
         qCritical() << "Database connection is not valid or open.";
@@ -38,9 +46,9 @@ int EditionManager::InsertEdition(const EditionData& edition_data)
     
     query.bindValue(":book_id", edition_data.book_id);
 
-    int publisher_id = id_name_table_manager->GetIdByName(IdNameTable::Publisher, edition_data.publisher);
+    int publisher_id = publisher_manager->GetIdByName(edition_data.publisher);
     if (publisher_id == -1) {
-        publisher_id = id_name_table_manager->Insert(IdNameTable::Publisher, edition_data.publisher);
+        publisher_id = publisher_manager->Insert(edition_data.publisher);
         if (publisher_id == -1) {
             qCritical() << "Failed to insert publisher:" << edition_data.publisher;
             return -1; // Insertion failed
@@ -51,9 +59,9 @@ int EditionManager::InsertEdition(const EditionData& edition_data)
     // Handle language_id
     int language_id = -1;
     if (!edition_data.language.trimmed().isEmpty()) {
-        language_id = id_name_table_manager->GetIdByName(IdNameTable::Language, edition_data.language);
+        language_id = language_manager->GetIdByName(edition_data.language);
         if (language_id == -1) {
-            language_id = id_name_table_manager->Insert(IdNameTable::Language, edition_data.language);
+            language_id = language_manager->Insert(edition_data.language);
             if (language_id == -1) {
                 qCritical() << "Failed to insert language:" << edition_data.language;
                 return -1; // Insertion failed
@@ -68,9 +76,9 @@ int EditionManager::InsertEdition(const EditionData& edition_data)
     // Handle series_id
     int series_id = -1;
     if (!edition_data.series.trimmed().isEmpty()) {
-        series_id = id_name_table_manager->GetIdByName(IdNameTable::Series, edition_data.series);
+        series_id = series_manager->GetIdByName(edition_data.series);
         if (series_id == -1) {
-            series_id = id_name_table_manager->Insert(IdNameTable::Series, edition_data.series);
+            series_id = series_manager->Insert(edition_data.series);
             if (series_id == -1) {
                 qCritical() << "Failed to insert series:" << edition_data.series;
                 return -1; // Insertion failed

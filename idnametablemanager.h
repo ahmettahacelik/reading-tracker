@@ -35,8 +35,9 @@ public:
      * @brief Constructs an IdNameTableManager object and initializes the tables.
      * 
      * @param db_manager Pointer to the DatabaseManager instance.
+     * @param table The type of ID-Name table to manage.
      */
-    IdNameTableManager(DatabaseManager* db_manager);
+    IdNameTableManager(DatabaseManager* db_manager, IdNameTable table);
 
     /**
      * @brief Destroys the IdNameTableManager object.
@@ -46,55 +47,47 @@ public:
     /**
      * @brief Insert a new name into the specified table
      * 
-     * @param table Table enum to insert into
      * @param name Input name to insert
      * @return int The ID of the inserted name, or -1 on failure
      */
-    int Insert(IdNameTable table, const QString& name);
+    int Insert(const QString& name);
 
     /**
      * @brief Get the Id By Name in the specified table
      * 
-     * @param table Table enum to search in
      * @param name Name to search for
      * @return int The ID of the name, or -1 if not found
      */
-    int GetIdByName(IdNameTable table,const QString& name);
+    int GetIdByName(const QString& name);
 
     /**
      * @brief Get the Name By Id in the specified table
-     * 
-     * @param table Table enum to search in
+     *
      * @param id ID to search for
      * @return QString The name associated with the ID, or an empty string if not found
      */
-    QString GetNameById(IdNameTable table, const int id);
+    QString GetNameById(const int id);
 
     /**
      * @brief Get all names from the specified table descending by id
      * 
-     * @param table Table enum to retrieve names from
      * @return QStringList List of names in the specified table
      */
-    QStringList GetAllNames(IdNameTable table);
+    QStringList GetAllNames();
 
 private:
     DatabaseManager* database_manager;  ///< Pointer to the DatabaseManager instance
+    IdNameTable table; ///< The table type being managed
+    QString table_name; ///< The name of the table in the database
 
     /**
      * @brief Convert IdNameTable enum to string
      * 
-     * @param table Table enum value
      * @return QString Table name as a string
      */
     const QString IdNameTableString(IdNameTable table);
 
-    /**
-     * @brief Create the specified table in the database
-     * 
-     * @param table Table enum to create
-     */
-    void CreateTable(IdNameTable table);
+    void CreateTable(); ///< Creates the ID-Name table in the database
 
 };
 
