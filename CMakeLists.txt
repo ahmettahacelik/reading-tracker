@@ -15,6 +15,7 @@ qt_add_executable(reading-tracker
     idnametablemanager.h idnametablemanager.cpp
     bookmanager.h bookmanager.cpp
     editionmanager.h editionmanager.cpp
+    ritemmanager.h ritemmanager.cpp
 )
 
 target_link_libraries(reading-tracker
