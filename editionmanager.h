@@ -57,7 +57,7 @@ private:
     DatabaseManager* database_manager; ///< Pointer to the DatabaseManager instance.
     IdNameTableManager* publisher_manager; ///< Pointer to the IdNameTableManager instance for publishers.
     IdNameTableManager* language_manager; ///< Pointer to the IdNameTableManager instance for languages.
-    IdNameTableManager* series_manager; ///< Pointer to the IdNameTableManager instance for
+    IdNameTableManager* series_manager; ///< Pointer to the IdNameTableManager instance for series.
     BookManager* book_manager; ///< Pointer to the BookManager instance.
 
     void CreateEditionTable(); ///< Creates the edition table in the database.
