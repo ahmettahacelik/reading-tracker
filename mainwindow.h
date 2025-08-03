@@ -4,6 +4,7 @@
 #include "editionmanager.h"
 
 #include <QMainWindow>
+#include <QLineEdit>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -37,6 +38,8 @@ private:
     void RefreshBookCompleters(); ///< Refreshes the completers for input fields.
 
     void RefreshEditionCompleters(); ///< Refreshes the completers for edition-related input fields.
+
+    void RefreshQCompleter(IdNameTableManager* manager, QLineEdit* lineEdit); ///< Refreshes a specific completer for a given IdNameTableManager and QLineEdit.
 
     void RefreshEditionsView(); ///< Refreshes the editions view in the UI.
 };

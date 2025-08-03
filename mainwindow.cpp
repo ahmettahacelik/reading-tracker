@@ -95,40 +95,11 @@ void MainWindow::on_pushButtonAddBook_clicked()
 
 void MainWindow::RefreshBookCompleters()
 {
-    /// @todo Consider creating a function to RefreshCompleter which takes a table type and input field
-    
     // Refresh completers for input fields
-    QStringList authors = author_manager->GetAllNames();
-    QCompleter* authorCompleter = new QCompleter(authors, this);
-    authorCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    authorCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    authorCompleter->setFilterMode(Qt::MatchContains);
-    authorCompleter->setCompletionRole(Qt::DisplayRole);
-    ui->lineEditAuthors->setCompleter(authorCompleter);
-
-    QStringList languages = language_manager->GetAllNames();
-    QCompleter* languageCompleter = new QCompleter(languages, this);
-    languageCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    languageCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    languageCompleter->setFilterMode(Qt::MatchContains);
-    languageCompleter->setCompletionRole(Qt::DisplayRole);
-    ui->lineEditOriginalLanguage->setCompleter(languageCompleter);
-
-    QStringList countries = country_manager->GetAllNames();
-    QCompleter* countryCompleter = new QCompleter(countries, this);
-    countryCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    countryCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    countryCompleter->setFilterMode(Qt::MatchContains);
-    countryCompleter->setCompletionRole(Qt::DisplayRole);
-    ui->lineEditCountry->setCompleter(countryCompleter);
-
-    QStringList genres = genre_manager->GetAllNames();
-    QCompleter* genreCompleter = new QCompleter(genres, this);
-    genreCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    genreCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    genreCompleter->setFilterMode(Qt::MatchContains);
-    genreCompleter->setCompletionRole(Qt::DisplayRole);
-    ui->lineEditGenres->setCompleter(genreCompleter);
+    RefreshQCompleter(author_manager, ui->lineEditAuthors);
+    RefreshQCompleter(language_manager, ui->lineEditOriginalLanguage);
+    RefreshQCompleter(country_manager, ui->lineEditCountry);
+    RefreshQCompleter(genre_manager, ui->lineEditGenres);
 }
 
 void MainWindow::on_pushButtonAddEdition_clicked()
@@ -196,26 +167,25 @@ void MainWindow::RefreshEditionCompleters()
     }
 
     // Refresh completers for edition-related input fields
-    QStringList publishers = publisher_manager->GetAllNames();
-    QCompleter* publisherCompleter = new QCompleter(publishers, this);
-    publisherCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    publisherCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    publisherCompleter->setFilterMode(Qt::MatchContains);
-    ui->lineEditPublisher->setCompleter(publisherCompleter);
+    RefreshQCompleter(publisher_manager, ui->lineEditPublisher);
+    RefreshQCompleter(language_manager, ui->lineEditLanguage);
+    RefreshQCompleter(series_manager, ui->lineEditSeries);
+}
 
-    QStringList languages = language_manager->GetAllNames();
-    QCompleter* languageCompleter = new QCompleter(languages, this);
-    languageCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    languageCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    languageCompleter->setFilterMode(Qt::MatchContains);
-    ui->lineEditLanguage->setCompleter(languageCompleter);
+void MainWindow::RefreshQCompleter(IdNameTableManager* manager, QLineEdit* lineEdit)
+{
+    if (!manager) {
+        qCritical() << "IdNameTableManager is not initialized.";
+        return;
+    }
 
-    QStringList series = series_manager->GetAllNames();
-    QCompleter* seriesCompleter = new QCompleter(series, this);
-    seriesCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    seriesCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    seriesCompleter->setFilterMode(Qt::MatchContains);
-    ui->lineEditSeries->setCompleter(seriesCompleter);
+    QStringList names = manager->GetAllNames();
+    QCompleter* completer = new QCompleter(names, this);
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    completer->setCompletionMode(QCompleter::PopupCompletion);
+    completer->setFilterMode(Qt::MatchContains);
+    completer->setCompletionRole(Qt::DisplayRole);
+    lineEdit->setCompleter(completer);
 }
 
 void MainWindow::RefreshEditionsView()
