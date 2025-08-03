@@ -25,6 +25,8 @@ MainWindow::MainWindow(QWidget *parent)
     series_manager = new IdNameTableManager(database_manager, IdNameTable::Series);
     edition_manager = new EditionManager(database_manager, publisher_manager, language_manager, series_manager, book_manager);
 
+    r_item_manager = new RItemManager(database_manager, edition_manager);
+
     // Set up completers for input fields
     RefreshBookCompleters();
 
@@ -34,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    delete r_item_manager;
     delete edition_manager;
     delete series_manager;
     delete publisher_manager;
@@ -102,6 +105,9 @@ void MainWindow::RefreshBookCompleters()
     RefreshQCompleter(genre_manager, ui->lineEditGenres);
 }
 
+/// @todo Rename to AddRItem instead of AddEdition
+/// @todo Update UI to reflect that this adds an RItem, not just an edition
+/// @bug When page_count is not set, it inserts last page_count value instead of NULL
 void MainWindow::on_pushButtonAddEdition_clicked()
 {
     EditionData edition_data;
@@ -126,9 +132,9 @@ void MainWindow::on_pushButtonAddEdition_clicked()
         return;
     }
 
-    int edition_id = edition_manager->InsertEdition(edition_data);
+    int r_item_id = r_item_manager->InsertEdition(edition_data);
 
-    if (edition_id != -1) {
+    if (r_item_id != -1) {
         QMessageBox::information(this, "Success", "Edition added successfully!");
     }
     else {

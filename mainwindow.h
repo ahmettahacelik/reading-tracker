@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "editionmanager.h"
+#include "ritemmanager.h"
 
 #include <QMainWindow>
 #include <QLineEdit>
@@ -34,6 +34,7 @@ private:
     IdNameTableManager* publisher_manager; ///< Pointer to the IdNameTableManager instance for publishers.
     IdNameTableManager* series_manager; ///< Pointer to the IdNameTableManager instance for series.
     EditionManager* edition_manager; ///< Pointer to the EditionManager instance.
+    RItemManager* r_item_manager; ///< Pointer to the RItemManager instance.
 
     void RefreshBookCompleters(); ///< Refreshes the completers for input fields.
 
