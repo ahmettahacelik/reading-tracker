@@ -25,9 +25,16 @@ public:
      * @brief Constructs a BookManager object and initializes the book-related tables.
      * 
      * @param db_manager Pointer to the DatabaseManager instance.
-     * @param id_name_table_manager Pointer to the IdNameTableManager instance.
+     * @param author_manager Pointer to the IdNameTableManager instance for Author table.
+     * @param language_manager Pointer to the IdNameTableManager instance for Language table.
+     * @param country_manager Pointer to the IdNameTableManager instance for Country table.
+     * @param genre_manager Pointer to the IdNameTableManager instance for Genre table.
      */
-    BookManager(DatabaseManager* db_manager, IdNameTableManager* id_name_table_manager);
+    BookManager(DatabaseManager* db_manager,
+                IdNameTableManager* author_manager,
+                IdNameTableManager* language_manager,
+                IdNameTableManager* country_manager,
+                IdNameTableManager* genre_manager);
 
     /**
      * @brief Destroys the BookManager object.
@@ -60,10 +67,14 @@ public:
 
 private:
     DatabaseManager* database_manager; ///< Pointer to the DatabaseManager instance.
-    IdNameTableManager* id_name_table_manager; ///< Pointer to the IdNameTableManager instance.
+    IdNameTableManager* author_manager; ///< Pointer to the IdNameTableManager instance for authors.
+    IdNameTableManager* language_manager; ///< Pointer to the IdNameTableManager instance for languages.
+    IdNameTableManager* country_manager; ///< Pointer to the IdNameTableManager instance for countries.
+    IdNameTableManager* genre_manager; ///< Pointer to the IdNameTableManager instance for genres.
 
     void CreateBookTable(); ///< Creates the book table in the database.
 
+    /// @todo Consider creating a junction class for Book2Author and Book2Genre to manage many-to-many relationships.
     void CreateBook2AuthorTable(); ///< Creates the book-author association table in the database.
 
     void CreateBook2GenreTable(); ///< Creates the book-genre association table in the database.

@@ -13,8 +13,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Initialize EditionManager and BookManager
     database_manager = new DatabaseManager();
-    id_name_table_manager = new IdNameTableManager(database_manager);
-    book_manager = new BookManager(database_manager, id_name_table_manager);
+
+    author_manager = new IdNameTableManager(database_manager, IdNameTable::Author);
+    language_manager = new IdNameTableManager(database_manager, IdNameTable::Language);
+    country_manager = new IdNameTableManager(database_manager, IdNameTable::Country);
+    genre_manager = new IdNameTableManager(database_manager, IdNameTable::Genre);
+    book_manager = new BookManager(database_manager, author_manager, language_manager, country_manager, genre_manager);
+    
     edition_manager = new EditionManager(database_manager, id_name_table_manager, book_manager);
 
     // Set up completers for input fields
