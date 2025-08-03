@@ -29,7 +29,7 @@ private:
     IdNameTableManager* author_manager; ///< Pointer to the IdNameTableManager instance for authors.
     IdNameTableManager* language_manager; ///< Pointer to the IdNameTableManager instance for languages.
     IdNameTableManager* country_manager; ///< Pointer to the IdNameTableManager instance for countries.
-    IdNameTableManager* genre_manager; ///< Pointer to the IdNameTableManager instance for
+    IdNameTableManager* genre_manager; ///< Pointer to the IdNameTableManager instance for genres.
     BookManager* book_manager; ///< Pointer to the BookManager instance.
     IdNameTableManager* publisher_manager; ///< Pointer to the IdNameTableManager instance for publishers.
     IdNameTableManager* series_manager; ///< Pointer to the IdNameTableManager instance for series.
