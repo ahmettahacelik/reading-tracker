@@ -12,15 +12,18 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     // Initialize EditionManager and BookManager
-    database_manager = new DatabaseManager();
+    DatabaseManager* database_manager = new DatabaseManager();
 
     author_manager = new IdNameTableManager(database_manager, IdNameTable::Author);
     language_manager = new IdNameTableManager(database_manager, IdNameTable::Language);
     country_manager = new IdNameTableManager(database_manager, IdNameTable::Country);
     genre_manager = new IdNameTableManager(database_manager, IdNameTable::Genre);
     book_manager = new BookManager(database_manager, author_manager, language_manager, country_manager, genre_manager);
-    
-    edition_manager = new EditionManager(database_manager, id_name_table_manager, book_manager);
+
+    publisher_manager = new IdNameTableManager(database_manager, IdNameTable::Publisher);
+    //language_manager = new IdNameTableManager(database_manager, IdNameTable::Language); // Already created for BookManager
+    series_manager = new IdNameTableManager(database_manager, IdNameTable::Series);
+    edition_manager = new EditionManager(database_manager, publisher_manager, language_manager, series_manager, book_manager);
 
     // Set up completers for input fields
     RefreshBookCompleters();
@@ -32,9 +35,13 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete edition_manager;
+    delete series_manager;
+    delete publisher_manager;
     delete book_manager;
-    delete id_name_table_manager;
-    delete database_manager;
+    delete genre_manager;
+    delete country_manager;
+    delete language_manager;
+    delete author_manager;
     delete ui;
 }
 
@@ -91,7 +98,7 @@ void MainWindow::RefreshBookCompleters()
     /// @todo Consider creating a function to RefreshCompleter which takes a table type and input field
     
     // Refresh completers for input fields
-    QStringList authors = id_name_table_manager->GetAllNames(IdNameTable::Author);
+    QStringList authors = author_manager->GetAllNames();
     QCompleter* authorCompleter = new QCompleter(authors, this);
     authorCompleter->setCaseSensitivity(Qt::CaseInsensitive);
     authorCompleter->setCompletionMode(QCompleter::PopupCompletion);
@@ -99,7 +106,7 @@ void MainWindow::RefreshBookCompleters()
     authorCompleter->setCompletionRole(Qt::DisplayRole);
     ui->lineEditAuthors->setCompleter(authorCompleter);
 
-    QStringList languages = id_name_table_manager->GetAllNames(IdNameTable::Language);
+    QStringList languages = language_manager->GetAllNames();
     QCompleter* languageCompleter = new QCompleter(languages, this);
     languageCompleter->setCaseSensitivity(Qt::CaseInsensitive);
     languageCompleter->setCompletionMode(QCompleter::PopupCompletion);
@@ -107,7 +114,7 @@ void MainWindow::RefreshBookCompleters()
     languageCompleter->setCompletionRole(Qt::DisplayRole);
     ui->lineEditOriginalLanguage->setCompleter(languageCompleter);
 
-    QStringList countries = id_name_table_manager->GetAllNames(IdNameTable::Country);
+    QStringList countries = country_manager->GetAllNames();
     QCompleter* countryCompleter = new QCompleter(countries, this);
     countryCompleter->setCaseSensitivity(Qt::CaseInsensitive);
     countryCompleter->setCompletionMode(QCompleter::PopupCompletion);
@@ -115,7 +122,7 @@ void MainWindow::RefreshBookCompleters()
     countryCompleter->setCompletionRole(Qt::DisplayRole);
     ui->lineEditCountry->setCompleter(countryCompleter);
 
-    QStringList genres = id_name_table_manager->GetAllNames(IdNameTable::Genre);
+    QStringList genres = genre_manager->GetAllNames();
     QCompleter* genreCompleter = new QCompleter(genres, this);
     genreCompleter->setCaseSensitivity(Qt::CaseInsensitive);
     genreCompleter->setCompletionMode(QCompleter::PopupCompletion);
@@ -177,8 +184,8 @@ void MainWindow::RefreshEditionCompleters()
         qCritical() << "BookManager is not initialized.";
         return;
     }
-    if (!id_name_table_manager) {
-        qCritical() << "IdNameTableManager is not initialized.";
+    if (!publisher_manager || !language_manager || !series_manager) {
+        qCritical() << "IdNameTableManager instances are not initialized.";
         return;
     }
     if (!database_manager || !database_manager->GetDatabase().isOpen()) {
@@ -193,21 +200,21 @@ void MainWindow::RefreshEditionCompleters()
     }
 
     // Refresh completers for edition-related input fields
-    QStringList publishers = id_name_table_manager->GetAllNames(IdNameTable::Publisher);
+    QStringList publishers = publisher_manager->GetAllNames();
     QCompleter* publisherCompleter = new QCompleter(publishers, this);
     publisherCompleter->setCaseSensitivity(Qt::CaseInsensitive);
     publisherCompleter->setCompletionMode(QCompleter::PopupCompletion);
     publisherCompleter->setFilterMode(Qt::MatchContains);
     ui->lineEditPublisher->setCompleter(publisherCompleter);
 
-    QStringList languages = id_name_table_manager->GetAllNames(IdNameTable::Language);
+    QStringList languages = language_manager->GetAllNames();
     QCompleter* languageCompleter = new QCompleter(languages, this);
     languageCompleter->setCaseSensitivity(Qt::CaseInsensitive);
     languageCompleter->setCompletionMode(QCompleter::PopupCompletion);
     languageCompleter->setFilterMode(Qt::MatchContains);
     ui->lineEditLanguage->setCompleter(languageCompleter);
 
-    QStringList series = id_name_table_manager->GetAllNames(IdNameTable::Series);
+    QStringList series = series_manager->GetAllNames();
     QCompleter* seriesCompleter = new QCompleter(series, this);
     seriesCompleter->setCaseSensitivity(Qt::CaseInsensitive);
     seriesCompleter->setCompletionMode(QCompleter::PopupCompletion);

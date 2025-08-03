@@ -25,10 +25,14 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    EditionManager* edition_manager; ///< Pointer to the EditionManager instance.
+    IdNameTableManager* author_manager; ///< Pointer to the IdNameTableManager instance for authors.
+    IdNameTableManager* language_manager; ///< Pointer to the IdNameTableManager instance for
+    IdNameTableManager* country_manager; ///< Pointer to the IdNameTableManager instance for countries.
+    IdNameTableManager* genre_manager; ///< Pointer to the IdNameTableManager instance for
     BookManager* book_manager; ///< Pointer to the BookManager instance.
-    IdNameTableManager* id_name_table_manager; ///< Pointer to the IdNameTableManager instance.
-    DatabaseManager* database_manager; ///< Pointer to the DatabaseManager instance.
+    IdNameTableManager* publisher_manager; ///< Pointer to the IdNameTableManager instance for publishers.
+    IdNameTableManager* series_manager; ///< Pointer to the IdNameTableManager instance for series.
+    EditionManager* edition_manager; ///< Pointer to the EditionManager instance.
 
     void RefreshBookCompleters(); ///< Refreshes the completers for input fields.
 
