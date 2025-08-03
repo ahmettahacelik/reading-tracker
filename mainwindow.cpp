@@ -188,10 +188,6 @@ void MainWindow::RefreshEditionCompleters()
         qCritical() << "IdNameTableManager instances are not initialized.";
         return;
     }
-    if (!database_manager || !database_manager->GetDatabase().isOpen()) {
-        qCritical() << "Database connection is not valid or open.";
-        return; // Database error
-    }
     
     QMap<int, QString> books = book_manager->GetAllBooks();
     ui->comboBoxBook->clear();

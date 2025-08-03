@@ -35,8 +35,9 @@ public:
      * @brief Constructs an IdNameTableManager object and initializes the tables.
      * 
      * @param db_manager Pointer to the DatabaseManager instance.
+     * @param table The type of ID-Name table to manage.
      */
-    IdNameTableManager(IdNameTable table, DatabaseManager* db_manager);
+    IdNameTableManager(DatabaseManager* db_manager, IdNameTable table);
 
     /**
      * @brief Destroys the IdNameTableManager object.
@@ -84,7 +85,7 @@ private:
      * 
      * @return QString Table name as a string
      */
-    const QString IdNameTableString();
+    const QString IdNameTableString(IdNameTable table);
 
     void CreateTable(); ///< Creates the ID-Name table in the database
 

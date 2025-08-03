@@ -8,7 +8,7 @@
 IdNameTableManager::IdNameTableManager(DatabaseManager* db_manager, IdNameTable table)
     : database_manager(db_manager),
       table(table),
-      table_name(IdNameTableString())
+      table_name(IdNameTableString(table))
 {
     if (!database_manager || !database_manager->GetDatabase().isOpen()) {
         qCritical() << "Database connection is not valid or open.";
