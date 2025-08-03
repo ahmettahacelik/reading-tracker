@@ -41,6 +41,67 @@ int RItemManager::InsertEdition(const EditionData& edition_data)
     return r_item_id;
 }
 
+bool RItemManager::RItemExists(int r_item_id) const
+{
+    if (!database_manager || !database_manager->GetDatabase().isOpen()) {
+        qCritical() << "Database connection is not valid or open.";
+        return false;
+    }
+
+    QSqlDatabase db = database_manager->GetDatabase();
+    QSqlQuery query(db);
+
+    query.prepare("SELECT 1 FROM RItem WHERE id = :id LIMIT 1");
+    query.bindValue(":id", r_item_id);
+
+    if (!query.exec()) {
+        qCritical() << "RItemExists:" << query.lastError().text();
+        return false;
+    }
+
+    return query.next(); // Returns true if a row exists
+}
+
+/// @todo Return with more details about the item, not just IDs
+QMap<int, QString> RItemManager::GetAllRItems() const
+{
+    QMap<int, QString> r_items;
+
+    if (!database_manager || !database_manager->GetDatabase().isOpen()) {
+        qCritical() << "Database connection is not valid or open.";
+        return r_items;
+    }
+
+    QSqlDatabase db = database_manager->GetDatabase();
+    QSqlQuery query(db);
+
+    // Get all readable items with their IDs and types
+    if (!query.exec("SELECT id, type FROM RItem")) {
+        qCritical() << "GetAllRItems:" << query.lastError().text();
+        return r_items;
+    }
+
+    while (query.next()) {
+        int r_item_id = query.value(0).toInt();
+        RItemType type = static_cast<RItemType>(query.value(1).toInt());
+
+        QString label;
+        if (type == RItemType::Edition) {
+            label = QString("Edition ID %1").arg(r_item_id);
+        }
+        else if (type == RItemType::Issue) {
+            label = QString("Issue ID %1").arg(r_item_id);
+        }
+        else {
+            label = QString("Unknown Type ID %1").arg(r_item_id);
+        }
+
+        r_items.insert(r_item_id, label);
+    }
+
+    return r_items;
+}
+
 void RItemManager::CreateRItemTable()
 {
     if (!database_manager || !database_manager->GetDatabase().isOpen()) {

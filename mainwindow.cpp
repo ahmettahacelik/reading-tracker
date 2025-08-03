@@ -27,15 +27,22 @@ MainWindow::MainWindow(QWidget *parent)
 
     r_item_manager = new RItemManager(database_manager, edition_manager);
 
+    shelf_manager = new IdNameTableManager(database_manager, IdNameTable::Shelf);
+    my_library_manager = new MyLibraryManager(database_manager, shelf_manager, r_item_manager);
+
     // Set up completers for input fields
     RefreshBookCompleters();
 
     RefreshEditionCompleters();
     RefreshEditionsView();
+
+    RefreshMyLibraryCompleters();
 }
 
 MainWindow::~MainWindow()
 {
+    delete my_library_manager;
+    delete shelf_manager;
     delete r_item_manager;
     delete edition_manager;
     delete series_manager;
@@ -152,6 +159,8 @@ void MainWindow::on_pushButtonAddEdition_clicked()
     ui->comboBoxBook->setFocus(); // Set focus back to book combo box
 
     RefreshEditionsView(); // Refresh the editions view to show the new edition
+
+    RefreshMyLibraryCompleters();
 }
 
 void MainWindow::RefreshEditionCompleters()
@@ -235,3 +244,56 @@ void MainWindow::RefreshEditionsView()
     // Hide the Edition ID column
     ui->tableViewEditions->setColumnHidden(0, true);
 }
+
+void MainWindow::RefreshMyLibraryCompleters()
+{
+    if (!my_library_manager || !shelf_manager) {
+        qCritical() << "MyLibraryManager or ShelfManager is not initialized.";
+        return;
+    }
+
+    QMap<int, QString> r_items = r_item_manager->GetAllRItems();
+    ui->comboBoxRItem->clear();
+    for (auto it = r_items.constBegin(); it != r_items.constEnd(); ++it) {
+        ui->comboBoxRItem->addItem(it.value(), it.key());
+    }
+
+    // Refresh completers for MyLibrary-related input fields
+    RefreshQCompleter(shelf_manager, ui->lineEditShelfName);
+}
+
+/// @todo Add QMessageBox to inform user about success or failure
+/// @todo Edit input fields for more user-friendly experience
+void MainWindow::on_pushButtonAddMyLibrary_clicked()
+{
+    if (!my_library_manager) {
+        qCritical() << "MyLibraryManager is not initialized.";
+        return;
+    }
+
+    MyLibraryData item_data;
+
+    // Get the selected RItem
+    item_data.r_item_id = ui->comboBoxRItem->currentData().toInt();
+    if (!r_item_manager->RItemExists(item_data.r_item_id)) {
+        qCritical() << "Invalid RItem selected.";
+        return;
+    }
+
+    item_data.acquired_from = ui->lineEditAcquiredFrom->text().trimmed();
+
+    item_data.acquired_date = ui->dateTimeEditAcquiredDate->dateTime();
+
+    item_data.price = ui->doubleSpinBoxPrice->value();
+
+    // Get the shelf name
+    item_data.shelf_name = ui->lineEditShelfName->text();
+
+    item_data.notes = ui->lineEditNotes->text();
+
+    // Add the RItem to the MyLibrary
+    my_library_manager->InsertRItem(item_data);
+
+    RefreshMyLibraryCompleters(); // Refresh completers to include new entries
+}
+

@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "ritemmanager.h"
+#include "mylibrarymanager.h"
 
 #include <QMainWindow>
 #include <QLineEdit>
@@ -23,6 +23,7 @@ public:
 private slots:
     void on_pushButtonAddBook_clicked();
     void on_pushButtonAddEdition_clicked();
+    void on_pushButtonAddMyLibrary_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -35,6 +36,8 @@ private:
     IdNameTableManager* series_manager; ///< Pointer to the IdNameTableManager instance for series.
     EditionManager* edition_manager; ///< Pointer to the EditionManager instance.
     RItemManager* r_item_manager; ///< Pointer to the RItemManager instance.
+    IdNameTableManager* shelf_manager; ///< Pointer to the IdNameTableManager instance for shelves.
+    MyLibraryManager* my_library_manager; ///< Pointer to the MyLibraryManager instance.
 
     void RefreshBookCompleters(); ///< Refreshes the completers for input fields.
 
@@ -43,5 +46,7 @@ private:
     void RefreshQCompleter(IdNameTableManager* manager, QLineEdit* lineEdit); ///< Refreshes a specific completer for a given IdNameTableManager and QLineEdit.
 
     void RefreshEditionsView(); ///< Refreshes the editions view in the UI.
+
+    void RefreshMyLibraryCompleters(); ///< Refreshes the completers for MyLibrary-related input fields.
 };
 #endif // MAINWINDOW_H

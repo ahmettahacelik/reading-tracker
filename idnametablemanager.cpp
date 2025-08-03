@@ -82,6 +82,27 @@ int IdNameTableManager::GetIdByName(const QString& name)
     return -1; // Not found
 }
 
+int IdNameTableManager::InsertIfNotExists(const QString& name)
+{
+    if (name.isEmpty()) {
+        qWarning() << "InsertIfNotExists failed: name cannot be empty";
+        return -1; // Invalid input
+    }
+
+    // Ensure the database connection is valid
+    if (!database_manager || !database_manager->GetDatabase().isOpen()) {
+        qCritical() << "Database connection is not valid or open.";
+        return -1; // Database error
+    }
+
+    int id = GetIdByName(name);
+    if (id != -1) {
+        return id; // Already exists
+    }
+
+    return Insert(name); // Insert and return new ID
+}
+
 QString IdNameTableManager::GetNameById(int id)
 {
     if(id <= 0) {
@@ -145,6 +166,7 @@ const QString IdNameTableManager::IdNameTableString(IdNameTable table)
         case IdNameTable::Country: return "Country";
         case IdNameTable::Genre: return "Genre";
         case IdNameTable::Series: return "Series";
+        case IdNameTable::Shelf: return "Shelf";
         default: return "";
     }
 }

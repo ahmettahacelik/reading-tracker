@@ -17,7 +17,8 @@ enum class IdNameTable {
     Language, ///< Represents the Language table
     Country, ///< Represents the Country table
     Genre, ///< Represents the Genre table
-    Series ///< Represents the Series table
+    Series, ///< Represents the Series table
+    Shelf ///< Represents the Shelf table
 };
 
 /**
@@ -59,6 +60,14 @@ public:
      * @return int The ID of the name, or -1 if not found
      */
     int GetIdByName(const QString& name);
+
+    /**
+     * @brief Insert a name if it does not already exist in the specified table
+     * 
+     * @param name Name to insert
+     * @return int The ID of the inserted or existing name, or -1 on failure or empty name
+     */
+    int InsertIfNotExists(const QString& name);
 
     /**
      * @brief Get the Name By Id in the specified table
