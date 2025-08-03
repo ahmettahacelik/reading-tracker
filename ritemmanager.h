@@ -28,9 +28,9 @@ public:
     ~RItemManager(); ///< Destructor
 
     /**
-     * @brief Inserts a new item into the database.
+     * @brief Inserts a new edition into the readable item table.
      * 
-     * @param item_data The data of the item to insert.
+     * @param edition_data The edition data of the item to insert.
      * @return int r_item_id, The ID of the inserted item, or -1 on failure.
      */
     int InsertEdition(const EditionData& edition_data);

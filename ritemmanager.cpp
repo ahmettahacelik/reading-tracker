@@ -75,11 +75,11 @@ int RItemManager::InsertRItem(const RItemData& item_data)
     query.bindValue(":type", static_cast<int>(item_data.type));
 
     // Only one of edition_id or issue_id should be set, the other should be NULL
-    if(item_data.type == RItemType::Edition && item_data.edition_id > 0) {
+    if(item_data.type == RItemType::Edition && item_data.edition_id > 0 && item_data.issue_id == -1) {
         query.bindValue(":edition_id", item_data.edition_id);
         query.bindValue(":issue_id", QVariant(QVariant::Int)); // Will be NULL in SQL
     }
-    else if(item_data.type == RItemType::Issue && item_data.issue_id > 0) {
+    else if(item_data.type == RItemType::Issue && item_data.issue_id > 0 && item_data.edition_id == -1) {
         query.bindValue(":edition_id", QVariant(QVariant::Int)); // Will be NULL in SQL
         query.bindValue(":issue_id", item_data.issue_id);
     }
