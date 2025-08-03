@@ -27,7 +27,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     IdNameTableManager* author_manager; ///< Pointer to the IdNameTableManager instance for authors.
-    IdNameTableManager* language_manager; ///< Pointer to the IdNameTableManager instance for
+    IdNameTableManager* language_manager; ///< Pointer to the IdNameTableManager instance for languages.
     IdNameTableManager* country_manager; ///< Pointer to the IdNameTableManager instance for countries.
     IdNameTableManager* genre_manager; ///< Pointer to the IdNameTableManager instance for
     BookManager* book_manager; ///< Pointer to the BookManager instance.
