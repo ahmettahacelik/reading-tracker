@@ -5,16 +5,16 @@
 #include <QVariant>
 #include <QDebug>
 
-IdNameTableManager::IdNameTableManager(DatabaseManager* db_manager)
-: database_manager(db_manager)
+IdNameTableManager::IdNameTableManager(DatabaseManager* db_manager, IdNameTable table)
+    : database_manager(db_manager),
+      table(table),
+      table_name(IdNameTableString())
 {
-    // Initialize tables
-    CreateTable(IdNameTable::Author);
-    CreateTable(IdNameTable::Publisher);
-    CreateTable(IdNameTable::Language);
-    CreateTable(IdNameTable::Country);
-    CreateTable(IdNameTable::Genre);
-    CreateTable(IdNameTable::Series);
+    if (!database_manager || !database_manager->GetDatabase().isOpen()) {
+        qCritical() << "Database connection is not valid or open.";
+        return; // Database error
+    }
+    CreateTable(); // Create the table if it doesn't exist
 }
 
 IdNameTableManager::~IdNameTableManager()
@@ -22,7 +22,7 @@ IdNameTableManager::~IdNameTableManager()
     // Destructor logic if needed
 }
 
-int IdNameTableManager::Insert(IdNameTable table, const QString& name)
+int IdNameTableManager::Insert(const QString& name)
 {
     if (name.isEmpty()) {
         qWarning() << "Insert failed: name cannot be empty";
@@ -40,22 +40,19 @@ int IdNameTableManager::Insert(IdNameTable table, const QString& name)
     QSqlDatabase db = database_manager->GetDatabase();
     QSqlQuery query(db);
 
-    // Convert IdNameTable enum to string for the table name
-    QString tableName = IdNameTableString(table);
-
     // Try inserting only if not exists
-    query.prepare(QString("INSERT OR IGNORE INTO %1 (name) VALUES (:name)").arg(tableName));
+    query.prepare(QString("INSERT OR IGNORE INTO %1 (name) VALUES (:name)").arg(table_name));
     query.bindValue(":name", name);
     if (!query.exec()) {
-        qCritical() << "Insert into" << tableName << ":" << query.lastError().text();
+        qCritical() << "Insert into" << table_name << ":" << query.lastError().text();
         return -1;
     }
 
     // Fetch ID
-    return GetIdByName(table, name);
+    return GetIdByName(name);
 }
 
-int IdNameTableManager::GetIdByName(IdNameTable table, const QString& name)
+int IdNameTableManager::GetIdByName(const QString& name)
 {
     if (name.isEmpty()) {
         qWarning() << "Insert failed: name cannot be empty";
@@ -70,12 +67,11 @@ int IdNameTableManager::GetIdByName(IdNameTable table, const QString& name)
 
     QSqlDatabase db = database_manager->GetDatabase();
     QSqlQuery query(db);
-    QString tableName = IdNameTableString(table);
 
-    query.prepare(QString("SELECT id FROM %1 WHERE name = :name").arg(tableName));
+    query.prepare(QString("SELECT id FROM %1 WHERE name = :name").arg(table_name));
     query.bindValue(":name", name);
     if (!query.exec()) {
-        qCritical() << "GetIdByName from" << tableName << ":" << query.lastError().text();
+        qCritical() << "GetIdByName from" << table_name << ":" << query.lastError().text();
         return -1;
     }
 
@@ -86,7 +82,7 @@ int IdNameTableManager::GetIdByName(IdNameTable table, const QString& name)
     return -1; // Not found
 }
 
-QString IdNameTableManager::GetNameById(IdNameTable table, int id)
+QString IdNameTableManager::GetNameById(int id)
 {
     if(id <= 0) {
         qWarning() << "GetNameById failed: ID must be greater than 0";
@@ -101,12 +97,11 @@ QString IdNameTableManager::GetNameById(IdNameTable table, int id)
 
     QSqlDatabase db = database_manager->GetDatabase();
     QSqlQuery query(db);
-    QString tableName = IdNameTableString(table);
 
-    query.prepare(QString("SELECT name FROM %1 WHERE id = :id").arg(tableName));
+    query.prepare(QString("SELECT name FROM %1 WHERE id = :id").arg(table_name));
     query.bindValue(":id", id);
     if (!query.exec()) {
-        qCritical() << "GetNameById from" << tableName << ":" << query.lastError().text();
+        qCritical() << "GetNameById from" << table_name << ":" << query.lastError().text();
         return {};
     }
 
@@ -117,7 +112,7 @@ QString IdNameTableManager::GetNameById(IdNameTable table, int id)
     return {};
 }
 
-QStringList IdNameTableManager::GetAllNames(IdNameTable table)
+QStringList IdNameTableManager::GetAllNames()
 {
     // Ensure the database connection is valid
     if (!database_manager || !database_manager->GetDatabase().isOpen()) {
@@ -128,10 +123,9 @@ QStringList IdNameTableManager::GetAllNames(IdNameTable table)
     QSqlDatabase db = database_manager->GetDatabase();
     QSqlQuery query(db);
     QStringList names;
-    QString tableName = IdNameTableString(table);
 
-    if (!query.exec(QString("SELECT name FROM %1 ORDER BY name").arg(tableName))) {
-        qCritical() << "GetAllNames from" << tableName << ":" << query.lastError().text();
+    if (!query.exec(QString("SELECT name FROM %1 ORDER BY name").arg(table_name))) {
+        qCritical() << "GetAllNames from" << table_name << ":" << query.lastError().text();
         return names;
     }
 
@@ -155,7 +149,7 @@ const QString IdNameTableManager::IdNameTableString(IdNameTable table)
     }
 }
 
-void IdNameTableManager::CreateTable(IdNameTable table)
+void IdNameTableManager::CreateTable()
 {
     // Ensure the database connection is valid
     if (!database_manager || !database_manager->GetDatabase().isOpen()) {
@@ -165,11 +159,10 @@ void IdNameTableManager::CreateTable(IdNameTable table)
     
     QSqlDatabase db = database_manager->GetDatabase();
     QSqlQuery query(db);
-    QString tableName = IdNameTableString(table);
 
     if(!query.exec(QString("CREATE TABLE IF NOT EXISTS %1 ("
                            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                           "name TEXT UNIQUE NOT NULL)").arg(tableName))) {
-        qCritical() << "Create" << tableName << ":" << query.lastError().text();
+                           "name TEXT UNIQUE NOT NULL)").arg(table_name))) {
+        qCritical() << "Create" << table_name << ":" << query.lastError().text();
     }
 }
