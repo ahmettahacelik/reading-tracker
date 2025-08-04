@@ -76,7 +76,7 @@ QMap<int, QString> RItemManager::GetAllRItems() const
     QSqlQuery query(db);
 
     // Get all readable items with their IDs and types
-    if (!query.exec("SELECT id, type FROM RItem")) {
+    if (!query.exec("SELECT id, type, edition_id, issue_id FROM RItem")) {
         qCritical() << "GetAllRItems:" << query.lastError().text();
         return r_items;
     }
@@ -84,10 +84,40 @@ QMap<int, QString> RItemManager::GetAllRItems() const
     while (query.next()) {
         int r_item_id = query.value(0).toInt();
         RItemType type = static_cast<RItemType>(query.value(1).toInt());
+        int edition_id = query.value(2).toInt();
+        // int issue_id = query.value(3).toInt(); // Not used for edition label
 
         QString label;
-        if (type == RItemType::Edition) {
-            label = QString("Edition ID %1").arg(r_item_id);
+
+        if (type == RItemType::Edition && edition_id > 0 && edition_manager) {
+            // Get edition details from EditionManager
+            QSqlDatabase db2 = database_manager->GetDatabase();
+            QSqlQuery editionQuery(db2);
+            editionQuery.prepare("SELECT Book.title, Publisher.name, Book.id "
+                                 "FROM Edition "
+                                 "LEFT JOIN Book ON Edition.book_id = Book.id "
+                                 "LEFT JOIN Publisher ON Edition.publisher_id = Publisher.id "
+                                 "WHERE Edition.id = :edition_id");
+            editionQuery.bindValue(":edition_id", edition_id);
+
+            QString title, publisher, authors;
+            int book_id = -1;
+            if (editionQuery.exec() && editionQuery.next()) {
+                title = editionQuery.value(0).toString();
+                publisher = editionQuery.value(1).toString();
+                book_id = editionQuery.value(2).toInt();
+            }
+
+            QStringList authorList = edition_manager->GetAuthorsForEdition(edition_id);
+            authors = authorList.join(", ");
+
+            label = title;
+            if (!authors.isEmpty()) {
+                label += " - " + authors;
+            }
+            if (!publisher.isEmpty()) {
+                label += " - " + publisher;
+            }
         }
         else if (type == RItemType::Issue) {
             label = QString("Issue ID %1").arg(r_item_id);
