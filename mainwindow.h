@@ -25,6 +25,8 @@ private slots:
     void on_pushButtonAddEdition_clicked();
     void on_pushButtonAddMyLibrary_clicked();
 
+    void on_pushButtonAddEdition_2_clicked();
+
 private:
     Ui::MainWindow *ui;
     IdNameTableManager* author_manager; ///< Pointer to the IdNameTableManager instance for authors.
@@ -49,5 +51,7 @@ private:
     void RefreshEditionsView(); ///< Refreshes the editions view in the UI.
 
     void RefreshMyLibraryCompleters(); ///< Refreshes the completers for MyLibrary-related input fields.
+
+    void RefreshRItemsView(); ///< Refreshes the view for readable items in the UI.
 };
 #endif // MAINWINDOW_H

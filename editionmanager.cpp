@@ -109,6 +109,36 @@ int EditionManager::InsertEdition(const EditionData& edition_data)
     return query.lastInsertId().toInt(); // Return the ID of the inserted edition
 }
 
+QStringList EditionManager::GetAuthorsForEdition(int edition_id) const
+{
+    if (!database_manager || !database_manager->GetDatabase().isOpen()) {
+        qCritical() << "Database connection is not valid or open.";
+        return QStringList(); // Return empty list on error
+    }
+
+    QSqlDatabase db = database_manager->GetDatabase();
+    QSqlQuery query(db);
+
+    query.prepare("SELECT Author.name FROM Book2Author "
+                  "JOIN Book ON Book2Author.book_id = Book.id "
+                  "JOIN Edition ON Book.id = Edition.book_id "
+                  "JOIN Author ON Book2Author.author_id = Author.id "
+                  "WHERE Edition.id = :edition_id");
+    query.bindValue(":edition_id", edition_id);
+
+    if (!query.exec()) {
+        qCritical() << "GetAuthorsForEdition:" << query.lastError().text();
+        return QStringList(); // Return empty list on error
+    }
+
+    QStringList authors;
+    while (query.next()) {
+        authors.append(query.value(0).toString());
+    }
+
+    return authors;
+}
+
 QMap<int, QString> EditionManager::GetAllEditions() const
 {
     QMap<int, QString> editions;

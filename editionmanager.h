@@ -53,6 +53,14 @@ public:
      */
     QMap<int, QString> GetAllEditions() const;
 
+    /**
+     * @brief Get the Authors For Edition
+     * 
+     * @param edition_id The ID of the edition to retrieve authors for.
+     * @return QStringList List of authors for the specified edition.
+     */
+    QStringList GetAuthorsForEdition(int edition_id) const;
+
 private:
     DatabaseManager* database_manager; ///< Pointer to the DatabaseManager instance.
     IdNameTableManager* publisher_manager; ///< Pointer to the IdNameTableManager instance for publishers.

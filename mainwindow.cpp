@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "addedition.h"
+
 #include <QMessageBox>
 #include <QCompleter>
 #include <QStandardItemModel>
@@ -298,5 +300,38 @@ void MainWindow::on_pushButtonAddMyLibrary_clicked()
     my_library_manager->InsertRItem(item_data);
 
     RefreshMyLibraryCompleters(); // Refresh completers to include new entries
+}
+
+void MainWindow::RefreshRItemsView()
+{
+    if (!r_item_manager) {
+        qCritical() << "RItemManager is not initialized.";
+        return;
+    }
+
+    QMap<int, QString> r_items = r_item_manager->GetAllRItems();
+    QStandardItemModel* model = new QStandardItemModel(this);
+    model->setColumnCount(2);
+    model->setHeaderData(0, Qt::Horizontal, "RItem ID");
+    model->setHeaderData(1, Qt::Horizontal, "Label");
+
+    int row = 0;
+    for (auto it = r_items.constBegin(); it != r_items.constEnd(); ++it) {
+        QStandardItem* itemRItemId = new QStandardItem(QString::number(it.key()));
+        QStandardItem* itemLabel = new QStandardItem(it.value());
+
+        model->setItem(row, 0, itemRItemId);
+        model->setItem(row, 1, itemLabel);
+        row++;
+    }
+
+    ui->listViewRItems->setModel(model);
+}
+
+
+void MainWindow::on_pushButtonAddEdition_2_clicked()
+{
+    AddEdition dialog(this);
+    dialog.exec();
 }
 
