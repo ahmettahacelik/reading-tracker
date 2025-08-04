@@ -32,10 +32,16 @@ int MyLibraryManager::InsertRItem(const MyLibraryData& item_data)
     QSqlDatabase db = database_manager->GetDatabase();
     QSqlQuery query(db);
 
-    query.prepare("INSERT INTO MyLibrary (r_item_id, acquired_from, acquired_date, price, shelf_id, notes) "
-                  "VALUES (:r_item_id, :acquired_from, :acquired_date, :price, :shelf_id, :notes)");
+    query.prepare("INSERT INTO MyLibrary (r_item_id, acquired_from_id, acquired_date, price, shelf_id, notes) "
+                  "VALUES (:r_item_id, :acquired_from_id, :acquired_date, :price, :shelf_id, :notes)");
     query.bindValue(":r_item_id", item_data.r_item_id);
-    query.bindValue(":acquired_from", item_data.acquired_from.trimmed().isEmpty() ? QVariant(QVariant::String) : item_data.acquired_from);
+    int acquired_from_id = acquired_from_manager->InsertIfNotExists(item_data.acquired_from.trimmed());
+    if(acquired_from_id == -1) {
+        query.bindValue(":acquired_from_id", QVariant(QVariant::Int)); // Will be NULL in SQL
+    }
+    else {
+        query.bindValue(":acquired_from_id", acquired_from_id);
+    }
     query.bindValue(":acquired_date", item_data.acquired_date.isNull() ? QVariant(QVariant::DateTime) : item_data.acquired_date);
     query.bindValue(":price", (item_data.price == 0.0) ? QVariant(QVariant::Double) : item_data.price);
     int shelf_id = shelf_manager->InsertIfNotExists(item_data.shelf_name);
@@ -69,14 +75,14 @@ void MyLibraryManager::CreateMyLibraryTable()
     query.exec("CREATE TABLE IF NOT EXISTS MyLibrary ("
                "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                "r_item_id INTEGER NOT NULL, "
-               "acquired_from TEXT, "                // Or INTEGER if referencing AcquiredFrom table
+               "acquired_from_id INTEGER, "
                "acquired_date DATETIME, "
                "price FLOAT, "
                "shelf_id INTEGER, "
                "created_at DATETIME DEFAULT CURRENT_TIMESTAMP, "
                "notes TEXT, "
                "FOREIGN KEY(r_item_id) REFERENCES RItem(id), "
-               "FOREIGN KEY(shelf_id) REFERENCES Shelf(id)"
-               // If acquired_from is an id, add: FOREIGN KEY(acquired_from)
+               "FOREIGN KEY(shelf_id) REFERENCES Shelf(id), "
+               "FOREIGN KEY(acquired_from_id) REFERENCES AcquiredFrom(id)"
                ")");
 }

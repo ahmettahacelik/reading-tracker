@@ -45,6 +45,7 @@ public:
 
 private:
     DatabaseManager* database_manager; ///< Pointer to the DatabaseManager instance.
+    IdNameTableManager* acquired_from_manager; ///< Pointer to the IdNameTableManager instance for acquired_from.
     IdNameTableManager* shelf_manager; ///< Pointer to the IdNameTableManager instance for shelves.
     RItemManager* r_item_manager; ///< Pointer to the RItemManager instance.
 

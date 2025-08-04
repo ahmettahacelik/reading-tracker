@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     r_item_manager = new RItemManager(database_manager, edition_manager);
 
+    acquired_from_manager = new IdNameTableManager(database_manager, IdNameTable::AcquiredFrom);
     shelf_manager = new IdNameTableManager(database_manager, IdNameTable::Shelf);
     my_library_manager = new MyLibraryManager(database_manager, shelf_manager, r_item_manager);
 
@@ -43,6 +44,7 @@ MainWindow::~MainWindow()
 {
     delete my_library_manager;
     delete shelf_manager;
+    delete acquired_from_manager;
     delete r_item_manager;
     delete edition_manager;
     delete series_manager;
@@ -259,6 +261,7 @@ void MainWindow::RefreshMyLibraryCompleters()
     }
 
     // Refresh completers for MyLibrary-related input fields
+    RefreshQCompleter(acquired_from_manager, ui->lineEditAcquiredFrom);
     RefreshQCompleter(shelf_manager, ui->lineEditShelfName);
 }
 

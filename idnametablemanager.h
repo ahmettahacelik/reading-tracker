@@ -18,7 +18,8 @@ enum class IdNameTable {
     Country, ///< Represents the Country table
     Genre, ///< Represents the Genre table
     Series, ///< Represents the Series table
-    Shelf ///< Represents the Shelf table
+    Shelf, ///< Represents the Shelf table
+    AcquiredFrom ///< Represents the AcquiredFrom table
 };
 
 /**

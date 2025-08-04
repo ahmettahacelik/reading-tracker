@@ -167,6 +167,7 @@ const QString IdNameTableManager::IdNameTableString(IdNameTable table)
         case IdNameTable::Genre: return "Genre";
         case IdNameTable::Series: return "Series";
         case IdNameTable::Shelf: return "Shelf";
+        case IdNameTable::AcquiredFrom: return "AcquiredFrom";
         default: return "";
     }
 }
